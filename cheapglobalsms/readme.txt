@@ -48,8 +48,8 @@ This section describes how to install the plugin and get it working.
 
 1. If you haven't already, then go to [CheapGlobalSMS.com](https://cheapglobalsms.com) and create a free account.
 1. Install and activate the plugin.
-1. Go to "Settings » CheapGlobalSMS Settings" and add an OAuth key and associated secret from your CheapGlobalSMS.com account.
-1. (Optional) Enable the sending UI and then go to "SMS'es » Create SMS" and try to send an SMS to yourself, verifying that all is setup correctly.
+1. Go to "Settings » CheapGlobalSMS Settings" and add a sub-account details from your CheapGlobalSMS.com account.
+1. (Optional) Enable the sending UI and then go to "CheapGlobalSMS » Send SMS" and try to send an SMS to yourself, verifying that all is setup correctly.
 
 
 == Frequently Asked Questions ==
