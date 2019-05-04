@@ -44,7 +44,7 @@
 			//'gateway_api'=>null
 	   );
 		
-		add_submenu_page($menu_slug, 'SMS Balance & Info', 'SMS Balance & Info',$capability,$menu_slug,$function);
+	 add_submenu_page($menu_slug, 'SMS Balance & Info', 'SMS Balance & Info',$capability,$menu_slug,$function);
 	   foreach($sub_menus as $sub_menu=>$sub_menu_title){
 		   $sub_menu_slug="$menu_slug-$sub_menu";
 		   $sub_menu_title=ucwords(str_replace('_',' ',$sub_menu));
