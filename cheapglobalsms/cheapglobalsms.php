@@ -25,7 +25,7 @@ function _cgsms_url(){
 /*
 	sms sending interface; available for use everywhere.
 */
-function cgsms_send_sms($message, $recipients, $senderid='',$send_at=0, $flash=0, $unicode=0){
+function cgsms_send_sms($message, $recipients, $senderid='',$send_at=0, $flash=0, $unicode=null){
 	if(is_array($recipients)){
 		$contacts=array();
 		$first=current($recipients);
@@ -39,6 +39,9 @@ function cgsms_send_sms($message, $recipients, $senderid='',$send_at=0, $flash=0
 	$cgsms_sub_account_pass=get_option('cgsms_sub_account_pass');
 	$senderid=$senderid?:get_option('cgsms_default_sender');
 	
+	$default_unicode=get_option('cgsms_default_unicode',0);
+    if($unicode===null)$unicode=$default_unicode;
+    
 	$post_data=array(
 	'sub_account'=>$cgsms_sub_account,
 	'sub_account_pass'=>$cgsms_sub_account_pass,
@@ -112,12 +115,22 @@ add_action('init', function () {
 		register_setting('cheapglobalsms', 'cgsms_sub_account');
 		register_setting('cheapglobalsms', 'cgsms_sub_account_pass');
 		register_setting('cheapglobalsms', 'cgsms_default_sender');
+		register_setting('cheapglobalsms', 'cgsms_default_unicode');
 		register_setting('cheapglobalsms', 'cgsms_enable_ui');
 		
 		register_setting('cheapglobalsms', 'cgsms_security_enable');
 		register_setting('cheapglobalsms', 'cgsms_security_required_roles');
 		register_setting('cheapglobalsms', 'cgsms_security_cookie_lifetime');
 		register_setting('cheapglobalsms', 'cgsms_security_bypass_code');
+        
+		register_setting('cheapglobalsms', 'cgsms_notif_wc-new');
+		register_setting('cheapglobalsms', 'cgsms_notif_wc-payment');
+        
+        if(function_exists('wc_get_order_statuses')){
+            $woo_statuses=wc_get_order_statuses();
+            foreach($woo_statuses as $woo_status=>$woo_status_descr)
+                register_setting('cheapglobalsms', "cgsms_notif_$woo_status");            
+        }
 	});
 	
 }, 9);
@@ -128,3 +141,67 @@ add_action('plugins_loaded', function() {
     //load_plugin_textdomain('cheapglobalsms', false, 'cheapglobalsms/languages/');
 });
 */
+
+//https://demo.wp-sms-pro.com/wp-admin/admin.php?page=wp-sms-pro&tab=wc
+function _cgsms_replace_placeholders($template,$order,array $more_values=array()){
+    $values=array();
+    $values['billing_first_name']=$order->billing_first_name;
+    $values['billing_last_name']=$order->billing_last_name;
+    $values['billing_company']=$order->billing_company;
+    $values['billing_address']=$order->billing_address;
+    $values['order_id']=$order->order_id;
+    $values['order_number']=$order->order_number;
+    $values['order_total']=$order->order_total;
+    $values['status']=$order->status;
+    if(is_array($more_values)&&!empty($more_values))$values=array_merge($values,$more_values);
+    
+    $find=array(); $replace=array();
+    foreach($values as $rk=>$rv){
+        $find[]="%$rk%"; $replace[]=$rv;
+    }
+    return str_ireplace($find,$replace,$template);
+}
+
+
+function cgsms_woo_order_status_changed($order_id,$old_status,$new_status) {
+    $order = wc_get_order($order_id);
+    $recipient=$order->get_billing_phone('view');
+    if(empty($recipient))return;    
+    $message_template=trim(get_option("cgsms_notif_wc-$new_status"));
+    if(empty($message_template))return;
+    
+    $message=_cgsms_replace_placeholders($message_template,$order);
+    cgsms_send_sms($message,$recipient);
+}
+add_action('woocommerce_order_status_changed', 'cgsms_woo_order_status_changed', 10, 3);
+
+add_action('woocommerce_new_order',function($order_id){
+    $order = wc_get_order($order_id);
+    $recipient=$order->get_billing_phone('view');
+    if(empty($recipient))return;
+    $message_template=trim(get_option("cgsms_notif_wc-new"));
+    if(empty($message_template))return;
+    $message=_cgsms_replace_placeholders($message_template,$order);
+    cgsms_send_sms($message,$recipient);
+});
+
+add_action('woocommerce_payment_complete',function($order_id){
+    $order = wc_get_order($order_id );
+    $recipient=$order->get_billing_phone('view'); //or 'edit'
+    //$recipient=$order->billing_phone;
+    if(empty($recipient))return;    
+    $message_template=trim(get_option("cgsms_notif_wc-payment"));
+    if(empty($message_template))return;
+    /*
+    $user = $order->get_user();
+    if($user ){} // do something with the user
+    */
+    $message=_cgsms_replace_placeholders($message_template,$order);
+    cgsms_send_sms($message,$recipient);
+});
+
+add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'cheapglobalsms_add_plugin_page_settings_link');
+function cheapglobalsms_add_plugin_page_settings_link($links){
+	$links[]='<a href="'.admin_url('options-general.php?page=cheapglobalsms').'">'.__('Settings').'</a>';
+	return $links;
+}

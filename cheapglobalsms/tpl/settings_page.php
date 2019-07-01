@@ -36,6 +36,9 @@
 			<a class='nav-tab' href='#securityTab'>
 				<?php _e('Security / 2fa', 'cheapglobalsms'); ?>
 			</a>
+			<a class='nav-tab' href='#woocommerceNotificationsTab'>
+				<?php _e('Woo-commerce Notifications', 'cheapglobalsms'); ?>
+			</a>
 		</div>
 		<div class='custom-nav-panes'>			
 			<form method="post" action="options.php">
@@ -85,6 +88,22 @@
                         </td>
                     </tr>
 					<tr valign="top">
+                        <th scope="row"><?php _e('Unicode By Default', 'cheapglobalsms'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox"
+                                       name="cgsms_default_unicode" <?= get_option('cgsms_default_unicode') ? 'checked' : ''; ?>
+                                        value="1">
+                                <?php _e('Yes, send sms with unicode encoding by default', 'cheapglobalsms'); ?>
+                            </label>
+                            <p class="help-block description">
+                                <?php _e('Unicode preserves special non-english characters (e.g arabic, chinese...), but at 72 characters per page (instead of 160)', 'cheapglobalsms'); ?>
+                                <i class="info has-tooltip"
+                                   title="<?= esc_attr(__('The choice here only applies to the auto-triggered sms like woo-commerce notification hooks', 'cheapglobalsms')) ?>"></i>
+                            </p>
+                        </td>
+                    </tr>
+					<tr valign="top">
                         <th scope="row"><?php _e('Enable security-tab', 'cheapglobalsms'); ?></th>
                         <td>
                             <label>
@@ -113,8 +132,8 @@
                     <?= __('The two-factor login system is based solely on SMS, so your users will not need any apps, thus making it compatible with any mobile phone. All you will ever pay, is the cost of the text messages sent as part of the login process, while getting the greatly added security of two-factor security.', 'cheapglobalsms'); ?>
                 </p>
 
+                <?php if (get_option('cgsms_security_enable')){ ?>
                 <table class="form-table">
-                    <?php if (get_option('cgsms_security_enable')): ?>
                         <tr valign="top">
                             <th scope="row"><?php _e('Emergency bypass URL', 'cheapglobalsms'); ?></th>
                             <?php
@@ -168,13 +187,70 @@
                                 </p>
                             </td>
                         </tr>
-                    <?php endif; ?>
-                </table>
+                    </table>
+                <?php } else { ?>
+                    <strong>Security feature has been disabled</strong>
+                <?php } ?>
 				
 				<hr>
 				<p class="submit"><input type="submit" name="submit"  class="button button-primary" value="Save Changes"  /></p>
             </div>
-			</form>
+			
+            <div class='custom-nav-pane' id='woocommerceNotificationsTab'>
+                <?php
+                    if(!function_exists('wc_get_order_statuses')){ ?>
+                        <h4>Woo-commerce has not active.</h4>
+                        <?php
+                    } else { ?>
+                        <table style='width:100%;'>
+                            <tr>
+                                <th style='width:50%;'>New Order & Payment</th>
+                                <th style='width:50%;'>Order Status Change</th>
+                            </tr>
+                            <tr>
+                                <td style='vertical-align:top;'>
+                                    <p>Enter the contents of the SMS message to be sent to the billing-phone number. <br/>
+                                    <i>(or leave the field empty to disable the notification type)</i>.</p>
+                                    <div class='form-group'>
+                                        <label style='display:block;font-weight:bold;'>New Order SMS Content</label>
+                                        <textarea name='cgsms_notif_wc-new' style='width:400px;max-width:100%;' ><?php echo get_option("cgsms_notif_wc-new"); ?></textarea>
+                                    </div>
+                                    <div class='form-group'>
+                                        <label style='display:block;font-weight:bold;'>Payment Completed SMS Content</label>
+                                        <textarea name='cgsms_notif_wc-payment' style='width:400px;max-width:100%;' ><?php echo get_option("cgsms_notif_wc-payment"); ?></textarea>
+                                    </div>
+                                    
+                                    <div style='font-weight:bold;'>You can use any of the following placeholders in the SMS.</div>
+                                    <ul style='font-style:italic;'>                            
+                                        <li>Billing First Name: %billing_first_name%</li>
+                                        <li>Billing family: %billing_last_name%</li>
+                                        <li>Billing Company: %billing_company%</li>
+                                        <li>Billing Address: %billing_address%</li>
+                                        <li>Order id: %order_id%</li>
+                                        <li>Order number: %order_number%</li>
+                                        <li>Order Total: %order_total%</li>
+                                        <li>Order status: %status%</li>
+                                    </ul>
+                                </td>
+                                <td>
+                    <?php 
+                        $woo_statuses=wc_get_order_statuses();
+                        foreach($woo_statuses as $woo_status=>$woo_status_descr){ ?>
+                        <div class='form-group'>
+                            <label style='display:block;font-weight:bold;'>Order <?php echo $woo_status_descr; ?> - SMS Content</label>
+                            <textarea name='cgsms_notif_<?php echo $woo_status; ?>' style='width:400px;max-width:100%;' ><?php echo get_option("cgsms_notif_$woo_status"); ?></textarea>
+                        </div>
+                        <?php } ?>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr>
+                        <p class="submit"><input type="submit" name="submit"  class="button button-primary" value="Save Changes"  /></p>
+                        <?php 
+                    }
+                ?>            
+            </div>
+            </form>
 			
             <div class='custom-nav-pane' id='smsPortalTab'>
 				<?php 
