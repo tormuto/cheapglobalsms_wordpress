@@ -1,9 +1,10 @@
 === CheapGlobalSMS ===
-Contributors: tormuto
+Contributors: Tormuto
 Tags: sms, two factor, security, mobile, texting, cheap sms, sms gateway,sms api
 Requires at least: 4.6
-Tested up to: 5.1.0
-Stable tag: 1.6.0
+Tested up to: 5.7.0
+Stable tag: 1.0.0
+Version: 1.0.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -11,7 +12,7 @@ Send SMS'es and enable SMS-based two-factor security.
 
 == Description ==
 
-This plugin enables you to send SMS'es straight from the WordPress backend or via the programmers API.
+This plugin enables you to send SMS'es straight from the WordPress back-end or via the programmers API.
 
 Also included is free and really easy to use two-factor security, which really hardens the security of your site.
 

@@ -1,3 +1,5 @@
+![Cheap International Bulk SMS](cheapglobalsms/img/cheap-global-sms.png?raw=true "WordPress Bulk SMS Provider")
+
 CheapGlobalSMS wordpress plugin enables you to send SMS'es straight from the WordPress backend or via the programmers API.
 
 Also included is free and really easy to use two-factor security, which really hardens the security of your site.

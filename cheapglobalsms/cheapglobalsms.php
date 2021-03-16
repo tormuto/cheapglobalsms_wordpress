@@ -145,14 +145,14 @@ add_action('plugins_loaded', function() {
 //https://demo.wp-sms-pro.com/wp-admin/admin.php?page=wp-sms-pro&tab=wc
 function _cgsms_replace_placeholders($template,$order,array $more_values=array()){
     $values=array();
-    $values['billing_first_name']=$order->billing_first_name;
-    $values['billing_last_name']=$order->billing_last_name;
-    $values['billing_company']=$order->billing_company;
-    $values['billing_address']=$order->billing_address;
-    $values['order_id']=$order->order_id;
-    $values['order_number']=$order->order_number;
-    $values['order_total']=$order->order_total;
-    $values['status']=$order->status;
+    $values['billing_first_name']=$order->get_billing_first_name();
+    $values['billing_last_name']=$order->get_billing_last_name();
+    $values['billing_company']=$order->get_billing_company();
+    $values['billing_address']=$order->get_billing_address_1();
+    $values['order_id']=$order->get_id(); //$order->order_id;
+    $values['order_number']=$order->get_order_number();
+    $values['order_total']=$order->get_formatted_order_total();
+    $values['status']=$order->get_status();
     if(is_array($more_values)&&!empty($more_values))$values=array_merge($values,$more_values);
     
     $find=array(); $replace=array();
